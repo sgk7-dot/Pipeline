@@ -1,0 +1,19 @@
+# ============================================================
+# Layer 1: thin orchestration layer.
+# Defines the stage order and pulls in job templates.
+# Keep this file readable - the shape of the pipeline at a glance.
+# ============================================================
+stages:
+  - build
+  - test
+  - scan
+  - deploy
+
+variables:
+  IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+include:
+  - local: '.gitlab/ci/build.yml'
+  - local: '.gitlab/ci/test.yml'
+  - local: '.gitlab/ci/scan.yml'
+  - local: '.gitlab/ci/deploy.yml'

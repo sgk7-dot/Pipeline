@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.github
+.gitlab
+.gitlab-ci.yml
+scripts
+chart
+test
+Dockerfile
+.dockerignore
+*.md
+*.txt
