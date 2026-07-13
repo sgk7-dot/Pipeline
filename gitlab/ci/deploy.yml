@@ -1,0 +1,26 @@
+# Layer 2: deploy templates. A hidden base job (.deploy_template) is
+# reused via `extends` so staging and prod share one definition.
+.deploy_template:
+  stage: deploy
+  image: alpine/helm:latest
+  script:
+    - ./scripts/deploy.sh "$ENVIRONMENT"
+
+deploy_staging:
+  extends: .deploy_template
+  variables:
+    ENVIRONMENT: staging
+  environment:
+    name: staging
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+deploy_prod:
+  extends: .deploy_template
+  variables:
+    ENVIRONMENT: production
+  environment:
+    name: production
+  when: manual          # gate production behind manual approval
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'

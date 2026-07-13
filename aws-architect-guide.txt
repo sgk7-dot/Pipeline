@@ -1,0 +1,750 @@
+================================================================================
+                     AWS SOLUTIONS ARCHITECT GUIDE
+================================================================================
+A detailed reference covering the AWS Well-Architected Framework, core services,
+architecture patterns, hands-on examples, and best practices for designing
+cloud systems.
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1.  The AWS Well-Architected Framework (The 6 Pillars)
+2.  Core AWS Service Categories
+3.  Compute Services
+4.  Storage Services
+5.  Database Services
+6.  Networking & Content Delivery
+7.  Security, Identity & Compliance
+8.  Monitoring & Management
+9.  Common Architecture Patterns
+10. High Availability & Disaster Recovery
+11. Cost Optimization Strategies
+12. Design Best Practices Checklist
+13. Hands-On: CloudFormation Snippets
+14. Reference Architecture Diagrams (Text)
+15. Sample IAM Policy JSON
+
+
+================================================================================
+1. THE AWS WELL-ARCHITECTED FRAMEWORK (THE 6 PILLARS)
+================================================================================
+The Well-Architected Framework is AWS's set of best practices for designing and
+operating reliable, secure, efficient, cost-effective, and sustainable systems.
+It gives you a consistent way to measure your architecture against AWS best
+practices and identify areas for improvement.
+
+Memory aid for the classic five: "CORPS"
+  Cost optimization, Operational excellence, Reliability, Performance, Security.
+
+--- PILLAR 1: OPERATIONAL EXCELLENCE ---
+Definition: The ability to run and monitor systems to deliver business value,
+and to continuously improve supporting processes and procedures. In practice
+this means treating your operations the way you treat your application code:
+automate everything you can, make small and frequent reversible changes, and
+learn from every failure so the same incident does not happen twice.
+
+Why it matters: Manual, ad-hoc operations do not scale and are error-prone.
+Codifying operations makes them repeatable, testable, and auditable.
+
+Key ideas:
+  - Perform operations as code (Infrastructure as Code) so changes are versioned.
+  - Make frequent, small, reversible changes to limit blast radius.
+  - Anticipate failure; run "game days" to rehearse incident response.
+  - Learn from operational events and update runbooks.
+Key services: CloudFormation, CloudWatch, AWS Config, Systems Manager, CodePipeline.
+
+--- PILLAR 2: SECURITY ---
+Definition: The ability to protect data, systems, and assets while delivering
+business value through risk assessments and mitigation strategies. It covers
+who can do what (identity and access management), keeping data private
+(encryption in transit and at rest), detecting threats, and responding to
+incidents when they occur.
+
+Why it matters: A single misconfigured permission or unencrypted bucket can
+expose an entire organization. Security must be built in at every layer, not
+bolted on at the end.
+
+Key ideas:
+  - Implement a strong identity foundation using least privilege.
+  - Enable traceability: log and monitor all actions (CloudTrail).
+  - Apply security at all layers (defense in depth).
+  - Automate security best practices so they scale.
+  - Protect data in transit (TLS) and at rest (KMS encryption).
+  - Prepare for security events with an incident response plan.
+Key services: IAM, KMS, Cognito, GuardDuty, WAF, Shield, Secrets Manager, Macie.
+
+--- PILLAR 3: RELIABILITY ---
+Definition: The ability of a workload to perform its intended function correctly
+and consistently, and to recover quickly from failures. A reliable system
+detects failure, recovers automatically, and scales to meet demand without
+manual intervention.
+
+Why it matters: Hardware fails, networks drop, and demand spikes. A reliable
+architecture assumes these things will happen and is designed to absorb them.
+
+Key ideas:
+  - Automatically recover from failure by monitoring key metrics.
+  - Test recovery procedures regularly (do not assume they work).
+  - Scale horizontally (more small instances) to reduce single points of failure.
+  - Stop guessing capacity; let Auto Scaling adjust to real demand.
+  - Manage change through automation to avoid human error.
+Key services: Auto Scaling, ELB, Route 53, CloudWatch, SQS, Multi-AZ deployments.
+
+--- PILLAR 4: PERFORMANCE EFFICIENCY ---
+Definition: The ability to use computing resources efficiently to meet system
+requirements, and to maintain that efficiency as demand changes and
+technologies evolve. It is about picking the right tool for the job and
+continually revisiting that choice as AWS releases new options.
+
+Why it matters: Over-provisioning wastes money; under-provisioning hurts users.
+Efficiency means matching resources to the actual workload profile.
+
+Key ideas:
+  - Democratize advanced technologies by consuming them as managed services.
+  - Go global in minutes using multiple Regions and edge locations.
+  - Use serverless architectures to remove the burden of managing servers.
+  - Experiment often; test different instance types and configurations.
+  - Match the technology approach to the workload (compute, memory, or I/O bound).
+Key services: Lambda, CloudFront, ElastiCache, Auto Scaling, EBS optimized instances.
+
+--- PILLAR 5: COST OPTIMIZATION ---
+Definition: The ability to run systems that deliver business value at the
+lowest possible price point. This means understanding your spend, eliminating
+waste, and choosing pricing models that match your usage patterns.
+
+Why it matters: The cloud makes it easy to spin up resources and just as easy
+to forget about them. Cost optimization keeps spend aligned with value.
+
+Key ideas:
+  - Adopt a consumption model: pay only for what you use.
+  - Measure overall efficiency and attribute costs to teams or products.
+  - Stop spending on undifferentiated heavy lifting; use managed services.
+  - Analyze and attribute expenditure with tagging and Cost Explorer.
+  - Use the right pricing model (On-Demand, Reserved, Spot, Savings Plans).
+Key services: Cost Explorer, Budgets, Trusted Advisor, Compute Savings Plans, S3 tiers.
+
+--- PILLAR 6: SUSTAINABILITY (added 2021) ---
+Definition: The ability to continually improve sustainability impacts by
+minimizing the energy and resources required to run your workloads. It asks you
+to treat environmental impact as a design consideration alongside cost and
+performance.
+
+Why it matters: Efficient architectures use less energy, which reduces both
+carbon footprint and cost. The two goals often align.
+
+Key ideas:
+  - Maximize utilization; right-size so resources are not idle.
+  - Use managed services that operate at high utilization across many customers.
+  - Choose efficient hardware (Graviton) and Regions powered by renewables.
+  - Reduce the resources needed per unit of work through optimization.
+Key services: Auto Scaling, Graviton-based instances, S3 lifecycle policies.
+
+
+================================================================================
+2. CORE AWS SERVICE CATEGORIES
+================================================================================
+  - Compute        : Run applications and workloads.
+  - Storage        : Store objects, files, and blocks.
+  - Database        : Managed relational, NoSQL, and in-memory data stores.
+  - Networking      : Connect, isolate, and deliver content.
+  - Security        : Manage identity, access, and data protection.
+  - Management      : Monitor, automate, and govern resources.
+  - Analytics/ML    : Process data and build intelligent applications.
+
+
+================================================================================
+3. COMPUTE SERVICES
+================================================================================
+EC2 (Elastic Compute Cloud)
+  Definition: Resizable virtual servers in the cloud. You get full control over
+  the operating system, networking, and installed software, just like a physical
+  server, but you can launch or terminate them in minutes.
+  - Instance families: General (t, m), Compute (c), Memory (r, x), Storage (i, d),
+    Accelerated (p, g). Graviton (ARM) instances offer better price/performance.
+  - Pricing: On-Demand, Reserved Instances, Spot (up to 90% off), Savings Plans.
+
+Lambda
+  Definition: Serverless compute that runs your code in response to events
+  without you provisioning or managing any servers. You upload a function and
+  AWS runs it, scaling automatically and charging only for the time it executes.
+  - Pay per request and compute time. Ideal for event-driven workloads.
+  - 15-minute max execution time per invocation.
+
+ECS / EKS / Fargate
+  Definition: Container orchestration services.
+  - ECS: AWS-native orchestration for Docker containers.
+  - EKS: Managed Kubernetes control plane.
+  - Fargate: Serverless compute engine for containers; no EC2 to manage.
+
+Elastic Beanstalk
+  Definition: A Platform-as-a-Service that handles provisioning, load balancing,
+  scaling, and health monitoring so you can just deploy your application code.
+
+
+================================================================================
+4. STORAGE SERVICES
+================================================================================
+S3 (Simple Storage Service)
+  Definition: Object storage built to store and retrieve any amount of data from
+  anywhere. Objects live in buckets, and the service provides 11 nines of
+  durability (99.999999999%) by replicating data across multiple facilities.
+  - Storage classes: Standard, Intelligent-Tiering, Standard-IA, One Zone-IA,
+    Glacier Instant/Flexible, Glacier Deep Archive.
+  - Use lifecycle policies to transition data to cheaper tiers automatically.
+
+EBS (Elastic Block Store)
+  Definition: Persistent block storage volumes for EC2 instances, behaving like
+  a virtual hard disk that survives instance stop/start.
+  - Types: gp3/gp2 (general SSD), io1/io2 (provisioned IOPS), st1/sc1 (HDD).
+
+EFS (Elastic File System)
+  Definition: A fully managed, elastic NFS file system that can be mounted by
+  many EC2 instances at once and grows and shrinks automatically.
+
+FSx
+  Definition: Fully managed third-party file systems, including FSx for Windows
+  (SMB) and FSx for Lustre (high-performance computing).
+
+Storage Gateway
+  Definition: A hybrid service that connects on-premises environments to AWS
+  storage, giving local applications low-latency access to cloud-backed data.
+
+
+================================================================================
+5. DATABASE SERVICES
+================================================================================
+RDS (Relational Database Service)
+  Definition: A managed service for relational databases that handles patching,
+  backups, and failover so you focus on your data, not the infrastructure.
+  Engines: MySQL, PostgreSQL, MariaDB, Oracle, SQL Server.
+  - Features: automated backups, Multi-AZ failover, read replicas.
+
+Aurora
+  Definition: AWS's cloud-native relational database, compatible with MySQL and
+  PostgreSQL, offering higher performance and storage that auto-scales.
+  - Up to 5x faster than standard MySQL; 6 copies of data across 3 AZs.
+
+DynamoDB
+  Definition: A fully managed, serverless NoSQL key-value and document database
+  delivering single-digit millisecond latency at any scale.
+  - Auto-scaling, great for high-throughput and unpredictable workloads.
+
+ElastiCache
+  Definition: A managed in-memory data store (Redis or Memcached) used to cache
+  frequently accessed data and reduce database load and latency.
+
+Redshift
+  Definition: A petabyte-scale data warehouse optimized for analytics (OLAP)
+  and complex queries across large datasets.
+
+Other: DocumentDB (MongoDB-compatible), Neptune (graph), Timestream (time-series).
+
+
+================================================================================
+6. NETWORKING & CONTENT DELIVERY
+================================================================================
+VPC (Virtual Private Cloud)
+  Definition: Your own logically isolated section of the AWS cloud where you
+  define IP ranges, subnets, and routing, giving you full control over the
+  network environment your resources run in.
+  - Components: subnets (public/private), route tables, internet gateway,
+    NAT gateway, security groups (stateful), network ACLs (stateless).
+
+Route 53
+  Definition: A highly available and scalable DNS and domain registration
+  service that also performs health checks and intelligent traffic routing.
+  - Routing policies: simple, weighted, latency, failover, geolocation.
+
+CloudFront
+  Definition: A global content delivery network (CDN) that caches content at
+  edge locations close to users to reduce latency.
+
+ELB (Elastic Load Balancing)
+  Definition: Distributes incoming traffic across multiple targets to improve
+  availability and fault tolerance.
+  - ALB (Layer 7, HTTP/HTTPS), NLB (Layer 4, TCP/UDP), GWLB (appliances).
+
+Direct Connect / VPN
+  - Direct Connect: a dedicated private network connection to AWS.
+  - Site-to-Site VPN: an encrypted tunnel to AWS over the public internet.
+
+API Gateway
+  Definition: A fully managed service to create, publish, secure, and monitor
+  REST, HTTP, and WebSocket APIs at any scale.
+
+
+================================================================================
+7. SECURITY, IDENTITY & COMPLIANCE
+================================================================================
+IAM (Identity and Access Management)
+  Definition: The service that controls who is authenticated and authorized to
+  use AWS resources, through users, groups, roles, and policies. Always follow
+  least privilege: grant only the permissions actually needed.
+  - Use roles for services and cross-account access; enable MFA everywhere.
+
+KMS (Key Management Service)
+  Definition: A managed service to create and control the encryption keys used
+  to protect your data, integrated with most AWS services.
+
+Cognito
+  Definition: Handles user sign-up, sign-in, and access control for web and
+  mobile applications, including federation with social and enterprise identities.
+
+GuardDuty / Inspector / Macie
+  - GuardDuty: continuous threat detection using logs and machine learning.
+  - Inspector: automated vulnerability scanning of workloads.
+  - Macie: discovers and protects sensitive data (PII) stored in S3.
+
+WAF & Shield
+  - WAF: a web application firewall that filters malicious HTTP requests.
+  - Shield: DDoS protection (Standard is free; Advanced is paid).
+
+Secrets Manager / Parameter Store
+  Definition: Securely store, retrieve, and automatically rotate credentials,
+  API keys, and configuration values instead of hardcoding them.
+
+
+================================================================================
+8. MONITORING & MANAGEMENT
+================================================================================
+CloudWatch     : Collects metrics, logs, alarms, and dashboards for observability.
+CloudTrail     : Records all API calls for auditing, security, and governance.
+AWS Config     : Tracks resource configuration changes and compliance over time.
+CloudFormation : Infrastructure as Code using templates in YAML or JSON.
+Systems Manager: Operational management (patching, run commands, session access).
+Trusted Advisor: Recommendations across cost, security, performance, and limits.
+Organizations  : Central management of many AWS accounts using SCPs.
+
+
+================================================================================
+9. COMMON ARCHITECTURE PATTERNS
+================================================================================
+--- Three-Tier Web Application ---
+  A classic pattern separating presentation, logic, and data into distinct tiers
+  so each can scale and be secured independently.
+  - Web tier: ALB + EC2/ECS in public-facing subnets (behind CloudFront).
+  - App tier: EC2/Lambda in private subnets with Auto Scaling.
+  - Data tier: RDS/Aurora Multi-AZ + ElastiCache in private subnets.
+
+--- Serverless Application ---
+  No servers to manage; the entire stack scales automatically and you pay per use.
+  - API Gateway -> Lambda -> DynamoDB.
+  - S3 for static assets, CloudFront for delivery, Cognito for auth.
+
+--- Event-Driven / Decoupled ---
+  Components communicate through messages rather than direct calls, which
+  improves resilience and lets each part scale on its own.
+  - Use SQS (queues), SNS (pub/sub), or EventBridge (event bus).
+
+--- Microservices ---
+  An application split into small, independent services, each owning its data.
+  - Deployed as containers (ECS/EKS/Fargate); communicate via APIs or events.
+
+--- Data Lake / Analytics ---
+  Centralize raw data cheaply, then catalog and query it on demand.
+  - Ingest to S3 -> catalog with Glue -> query with Athena / Redshift Spectrum.
+
+
+================================================================================
+10. HIGH AVAILABILITY & DISASTER RECOVERY
+================================================================================
+Key principles:
+  - Deploy across multiple Availability Zones (AZs) for high availability.
+  - Use multiple Regions for disaster recovery and global reach.
+  - Eliminate single points of failure; automate failover.
+
+DR strategies (increasing cost, decreasing recovery time):
+  1. Backup & Restore  - cheapest; restore from backups (RPO/RTO in hours).
+  2. Pilot Light        - minimal core running; scale up on disaster.
+  3. Warm Standby       - scaled-down full copy running; scale up on failover.
+  4. Multi-Site Active/Active - full production in multiple Regions; near-zero RTO.
+
+Terms:
+  - RTO (Recovery Time Objective): how fast you must recover after an outage.
+  - RPO (Recovery Point Objective): how much data loss is acceptable.
+
+
+================================================================================
+11. COST OPTIMIZATION STRATEGIES
+================================================================================
+  - Right-size instances based on actual utilization.
+  - Use Auto Scaling to match capacity to demand.
+  - Choose the right pricing model:
+      * On-Demand    - flexible, short-term, unpredictable workloads.
+      * Reserved/Savings Plans - steady-state workloads (up to ~72% savings).
+      * Spot          - fault-tolerant, interruptible workloads (up to 90% off).
+  - Use S3 lifecycle policies and Intelligent-Tiering.
+  - Delete unused resources (idle EBS volumes, unattached EIPs, old snapshots).
+  - Use Graviton (ARM) instances for better price/performance.
+  - Monitor with Cost Explorer, Budgets, and Trusted Advisor.
+
+
+================================================================================
+12. DESIGN BEST PRACTICES CHECKLIST
+================================================================================
+[ ] Follow least-privilege IAM; never use the root account for daily work.
+[ ] Enable MFA on all privileged accounts.
+[ ] Encrypt data at rest (KMS) and in transit (TLS).
+[ ] Deploy across at least two Availability Zones.
+[ ] Put databases and app servers in private subnets.
+[ ] Use security groups and NACLs to restrict traffic.
+[ ] Automate infrastructure with CloudFormation / IaC.
+[ ] Enable CloudTrail, CloudWatch, and AWS Config.
+[ ] Set up Auto Scaling and load balancing.
+[ ] Implement backups and a tested disaster recovery plan.
+[ ] Tag resources for cost allocation and organization.
+[ ] Set billing alarms and budgets.
+[ ] Design for failure - assume components will fail.
+
+
+================================================================================
+13. HANDS-ON: CLOUDFORMATION SNIPPETS
+================================================================================
+CloudFormation is AWS's Infrastructure as Code service. You describe resources
+in a YAML or JSON template, and AWS provisions them as a single "stack" you can
+version, update, and delete cleanly. Below are practical, copy-ready snippets.
+
+--- 13.1 An S3 bucket with encryption and versioning ---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Secure S3 bucket with encryption, versioning, and public access blocked
+Resources:
+  SecureBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: my-secure-app-bucket-2026
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+Outputs:
+  BucketName:
+    Description: Name of the created bucket
+    Value: !Ref SecureBucket
+
+--- 13.2 A VPC with a public and a private subnet ---
+Resources:
+  AppVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: app-vpc
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref AppVPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select [0, !GetAZs '']
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref AppVPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+
+--- 13.3 An EC2 instance with a security group (HTTP + SSH) ---
+Parameters:
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+Resources:
+  WebServerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP and SSH
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 10.0.0.0/16   # restrict SSH to internal range
+  WebServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      ImageId: !Ref LatestAmiId
+      SecurityGroupIds:
+        - !Ref WebServerSG
+
+--- 13.4 A Lambda function with an IAM execution role ---
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  HelloFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.12
+      Handler: index.handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              return {"statusCode": 200, "body": "Hello from Lambda"}
+
+--- 13.5 A DynamoDB table (on-demand billing) ---
+Resources:
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+
+Deploy any of these with the AWS CLI:
+  aws cloudformation deploy --template-file template.yaml --stack-name my-stack \
+      --capabilities CAPABILITY_IAM
+
+
+================================================================================
+14. REFERENCE ARCHITECTURE DIAGRAMS (TEXT)
+================================================================================
+
+--- 14.1 Three-Tier Highly Available Web Application ---
+
+                              +-------------------+
+                              |     Route 53      |  (DNS)
+                              +---------+---------+
+                                        |
+                              +---------v---------+
+                              |    CloudFront     |  (CDN / edge cache)
+                              +---------+---------+
+                                        |
+                              +---------v---------+
+                              |  App Load Balancer |  (public subnets)
+                              +----+---------+----+
+                                   |         |
+                    Availability Zone A   Availability Zone B
+                    +--------------+       +--------------+
+   Web / App tier   |  EC2 / ECS   |       |  EC2 / ECS   |   (private subnets,
+   (Auto Scaling)   +------+-------+       +------+-------+    Auto Scaling group)
+                           |                      |
+                    +------v----------------------v------+
+   Data tier        |     RDS / Aurora (Primary + Standby) |  (Multi-AZ, private)
+                    +-------------------+------------------+
+                                        |
+                              +---------v---------+
+                              |    ElastiCache    |  (caching layer)
+                              +-------------------+
+
+Notes:
+  - Public subnets hold only the load balancer; app and data tiers stay private.
+  - Multi-AZ gives automatic failover if one Availability Zone goes down.
+  - Auto Scaling adds/removes instances based on load.
+
+
+--- 14.2 Serverless REST API ---
+
+     Client (web / mobile)
+            |
+            v
+     +--------------+        +---------------+        +----------------+
+     |  CloudFront  | -----> |  API Gateway  | -----> |     Lambda     |
+     | (static S3)  |        |  (REST/HTTP)  |        |  (business     |
+     +--------------+        +-------+-------+        |   logic)       |
+                                     |                +--------+-------+
+                                     |                         |
+                             +-------v-------+         +-------v-------+
+                             |    Cognito    |         |   DynamoDB    |
+                             | (user auth)   |         | (data store)  |
+                             +---------------+         +---------------+
+
+Notes:
+  - No servers to manage; everything scales automatically and is pay-per-use.
+  - Cognito handles authentication; API Gateway validates and routes requests.
+
+
+--- 14.3 Event-Driven Decoupled Processing ---
+
+   +-----------+      publish      +-----------+     fan-out    +-------------+
+   | Producer  | ----------------> |    SNS    | -------------> |  SQS Queue  |
+   | (service) |                   | (topic)   |                +------+------+
+   +-----------+                   +-----------+                       |
+                                                                       | poll
+                                                                +------v------+
+                                                                |   Lambda    |
+                                                                | (worker)    |
+                                                                +------+------+
+                                                                       |
+                                                                +------v------+
+                                                                |  DynamoDB   |
+                                                                +-------------+
+
+Notes:
+  - SNS fans a single event out to many subscribers (queues, functions, emails).
+  - SQS buffers work so consumers process at their own pace, absorbing spikes.
+  - If a worker fails, the message returns to the queue for retry.
+
+
+--- 14.4 Data Lake / Analytics Pipeline ---
+
+   Data sources
+   +-------------+  +-------------+  +-------------+
+   |  Databases  |  |  App logs   |  |  Streaming  |
+   |  (RDS/DMS)  |  | (CloudWatch)|  |  (Kinesis)  |
+   +------+------+  +------+------+  +------+------+
+          |                |                |
+          +----------------+----------------+
+                           |  ingest
+                           v
+                 +---------------------+
+   Raw zone      |         S3          |  (raw / landing bucket)
+                 +----------+----------+
+                            |  crawl + catalog
+                            v
+                 +---------------------+
+   Catalog       |     AWS Glue        |  (schema + ETL jobs)
+                 +----------+----------+
+                            |  transform -> curated bucket
+                            v
+                 +---------------------+
+   Curated zone  |         S3          |  (cleaned / partitioned)
+                 +----------+----------+
+                            |
+              +-------------+--------------+
+              |             |              |
+       +------v-----+ +-----v------+ +-----v-------+
+       |   Athena   | |  Redshift  | | QuickSight  |
+       | (ad-hoc    | |  Spectrum  | | (dashboards |
+       |  SQL)      | | (warehouse)| |  / BI)      |
+       +------------+ +------------+ +-------------+
+
+Notes:
+  - S3 is the durable, low-cost storage core of the data lake.
+  - Glue crawlers infer schema and populate the Data Catalog; Glue jobs run ETL.
+  - Separate raw and curated zones so raw data is never mutated.
+  - Query in place with Athena (serverless SQL) or Redshift Spectrum; visualize
+    with QuickSight. No need to move data into a database first.
+
+
+================================================================================
+15. SAMPLE IAM POLICY JSON
+================================================================================
+IAM policies are JSON documents that define permissions. Each statement has an
+Effect (Allow/Deny), one or more Actions, the Resources they apply to, and
+optional Conditions. Always grant the least privilege required.
+
+--- 15.1 Read-only access to a specific S3 bucket ---
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListTheBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::my-secure-app-bucket-2026"
+    },
+    {
+      "Sid": "ReadObjects",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::my-secure-app-bucket-2026/*"
+    }
+  ]
+}
+
+--- 15.2 Allow a Lambda function to write to one DynamoDB table ---
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "WriteToUsersTable",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:GetItem",
+        "dynamodb:Query"
+      ],
+      "Resource": "arn:aws:dynamodb:us-east-1:123456789012:table/Users"
+    }
+  ]
+}
+
+--- 15.3 Deny any action if the request is not using TLS (secure transport) ---
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyInsecureTransport",
+      "Effect": "Deny",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::my-secure-app-bucket-2026",
+        "arn:aws:s3:::my-secure-app-bucket-2026/*"
+      ],
+      "Condition": {
+        "Bool": { "aws:SecureTransport": "false" }
+      }
+    }
+  ]
+}
+
+--- 15.4 Restrict access to a specific region and require MFA ---
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowEC2InUsEast1WithMFA",
+      "Effect": "Allow",
+      "Action": "ec2:*",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": { "aws:RequestedRegion": "us-east-1" },
+        "Bool": { "aws:MultiFactorAuthPresent": "true" }
+      }
+    }
+  ]
+}
+
+--- 15.5 Trust policy: let the EC2 service assume a role ---
+(A trust policy defines WHO can assume a role; it goes on the role itself.)
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "Service": "ec2.amazonaws.com" },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+
+Tips:
+  - "Version" should always be "2012-10-17" (the current policy language version).
+  - An explicit Deny always overrides any Allow.
+  - Use conditions (MFA, source IP, region, TLS) to tighten access further.
+  - Prefer AWS managed policies for common needs; write custom ones for the rest.
+
+
+================================================================================
+                              END OF GUIDE
+================================================================================

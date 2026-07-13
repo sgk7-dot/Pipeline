@@ -1,0 +1,101 @@
+========================================================================
+ WHAT TO KNOW FOR A DEVOPS ROLE (CURRENT)
+========================================================================
+A practical skills map. Job descriptions are wish lists - nobody knows
+everything here deeply. Focus on solid foundations + go deep on
+Kubernetes and Terraform.
+
+------------------------------------------------------------------------
+1. FOUNDATIONS (NON-NEGOTIABLE)
+------------------------------------------------------------------------
+- Linux: command line, file permissions, processes, systemd, networking
+  basics, shell navigation. Most infra runs on Linux.
+- Scripting: Bash for glue/automation; Python for anything more complex
+  (tooling, AWS SDK/boto3, automation). Python is the DevOps language of choice.
+- Git: branching strategies (trunk-based, GitFlow), merge vs rebase,
+  conflict resolution, tags.
+- Networking: DNS, HTTP/HTTPS, TCP/IP, load balancing, firewalls,
+  subnets/CIDR, VPNs.
+
+------------------------------------------------------------------------
+2. CI/CD
+------------------------------------------------------------------------
+- Pipeline design: build -> test -> scan -> deploy stages
+- Tools: GitLab CI, GitHub Actions, Jenkins (enterprise);
+  awareness of Argo CD / Flux for GitOps
+- Concepts: artifacts, caching, secrets in pipelines,
+  deployment strategies (blue-green, canary, rolling)
+
+------------------------------------------------------------------------
+3. CONTAINERS & ORCHESTRATION (BIGGEST GROWTH LEVER)
+------------------------------------------------------------------------
+- Docker: images, multi-stage builds, registries, Compose
+- Kubernetes: THE most in-demand skill. Learn pods, deployments,
+  services, ingress, ConfigMaps/Secrets, HPA, namespaces, and Helm.
+  Managed flavors: EKS (AWS), GKE, AKS.
+- Kubernetes is where the associate -> mid-level salary jump often comes from.
+
+------------------------------------------------------------------------
+4. CLOUD
+------------------------------------------------------------------------
+- AWS core: EC2, S3, IAM, VPC, ECS/EKS, RDS, Lambda, CloudWatch,
+  Route53, ALB/NLB
+- Go deeper on IAM (roles, policies, OIDC), cost management,
+  multi-AZ / high-availability design
+- Nice to have: awareness of Azure or GCP (concepts transfer)
+
+------------------------------------------------------------------------
+5. INFRASTRUCTURE AS CODE (IaC)
+------------------------------------------------------------------------
+- Terraform: industry standard. Modules, remote state, workspaces,
+  plan/apply in pipelines. HIGH priority.
+- Configuration management: Ansible (VM/server config)
+- Awareness of Pulumi, CloudFormation, CDK
+
+------------------------------------------------------------------------
+6. MONITORING & OBSERVABILITY
+------------------------------------------------------------------------
+- Metrics: Prometheus + Grafana
+- Logging: ELK/EFK stack, Loki, or cloud-native (CloudWatch Logs)
+- Tracing: OpenTelemetry, Jaeger
+- Concepts: SLI/SLO/SLA, alerting, dashboards,
+  the three pillars (metrics, logs, traces)
+
+------------------------------------------------------------------------
+7. SECURITY (DEVSECOPS - RISING FAST)
+------------------------------------------------------------------------
+- Shift-left scanning in pipelines: Trivy, SonarQube, Snyk
+- Secrets management: HashiCorp Vault, AWS Secrets Manager, sealed secrets
+- Image scanning, SAST/DAST, dependency scanning, least-privilege IAM
+- A genuine differentiator right now.
+
+------------------------------------------------------------------------
+8. EMERGING / TRENDING (2025-2026)
+------------------------------------------------------------------------
+- GitOps: Argo CD / Flux; declarative deployments driven by git
+- Platform engineering: internal developer platforms (IDPs), Backstage.
+  Industry is shifting from "DevOps engineer" to "platform engineer".
+- AI/LLM in ops (AIOps): AI-assisted incident response, anomaly detection
+- FinOps: cloud cost optimization as a formal discipline
+- Policy as Code: OPA/Gatekeeper, Kyverno
+
+------------------------------------------------------------------------
+SUGGESTED PRIORITY (NEXT 6-12 MONTHS)
+Given a base of GitLab CI + AWS:
+------------------------------------------------------------------------
+1. Kubernetes + Helm    -> biggest gap, biggest payoff (moves you to mid-level)
+2. Terraform            -> deepen it; expected almost everywhere
+3. Prometheus/Grafana + a logging stack -> round out observability
+4. Python               -> level up beyond Bash
+5. DevSecOps basics + Vault -> strong differentiator
+6. GitOps (Argo CD)     -> ties Kubernetes + CI/CD together
+
+------------------------------------------------------------------------
+HONEST FRAMING
+------------------------------------------------------------------------
+You do NOT need all of this to be hireable. What matters:
+- Solid foundations (Linux, Git, one cloud, CI/CD, Docker)
+- Go DEEP on Kubernetes and Terraform
+- Be able to explain the full lifecycle end to end
+Real project/work experience counts more than certifications.
+========================================================================

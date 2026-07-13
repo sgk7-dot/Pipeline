@@ -1,0 +1,12 @@
+# Layer 2: reusable workflow - test stage.
+name: test
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup   # composite action, shared setup
+      - run: ./scripts/test.sh

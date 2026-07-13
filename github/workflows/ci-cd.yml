@@ -1,0 +1,36 @@
+# ============================================================
+# Layer 1: thin orchestration layer (the caller workflow).
+# Wires reusable workflows together with `needs` + `uses`.
+# The shape of the pipeline is visible at a glance here.
+# ============================================================
+name: ci-cd
+on:
+  push:
+    branches: [main]
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      image: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+  test:
+    needs: build
+    uses: ./.github/workflows/test.yml
+
+  scan:
+    needs: build
+    uses: ./.github/workflows/scan.yml
+    with:
+      image: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+  deploy:
+    needs: [test, scan]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: staging
+      image: ghcr.io/${{ github.repository }}:${{ github.sha }}
+    secrets: inherit

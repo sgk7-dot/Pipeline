@@ -1,0 +1,25 @@
+# Layer 2: reusable workflow - deploy stage.
+name: deploy
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Environment-level protection rules (approvals) are configured
+    # per environment in the repo settings and enforced here.
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Deploy
+        env:
+          IMAGE: ${{ inputs.image }}
+        run: ./scripts/deploy.sh "${{ inputs.environment }}"

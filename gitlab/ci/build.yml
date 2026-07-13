@@ -1,0 +1,11 @@
+# Layer 2: build job template. Calls the versioned script (Layer 3).
+build:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - ./scripts/build.sh "$IMAGE"
+    - docker push "$IMAGE"

@@ -1,0 +1,28 @@
+# Layer 2: reusable workflow - build stage.
+# Callable from other workflows via `uses`.
+name: build
+on:
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write          # needed to push the image to GHCR
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        run: |
+          ./scripts/build.sh "${{ inputs.image }}"
+          docker push "${{ inputs.image }}"

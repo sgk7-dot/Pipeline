@@ -1,0 +1,14 @@
+{
+  "name": "cicd-sample-app",
+  "version": "1.0.0",
+  "description": "Minimal Node app to exercise the layered CI/CD pipeline end to end",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

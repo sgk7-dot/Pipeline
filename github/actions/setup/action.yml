@@ -1,0 +1,12 @@
+# Layer 2b: composite action - shared setup steps reused across workflows.
+name: setup
+description: Common setup steps (checkout deps, toolchain) reused across workflows.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    - run: npm ci
+      shell: bash

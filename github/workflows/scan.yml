@@ -1,0 +1,26 @@
+# Layer 2: reusable workflow - security scan stage.
+# Pulls the image built earlier and scans both filesystem and image.
+name: scan
+on:
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read          # needed to pull the image from GHCR
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run scan
+        run: ./scripts/scan.sh "${{ inputs.image }}"
